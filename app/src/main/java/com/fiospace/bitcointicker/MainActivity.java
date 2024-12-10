@@ -89,6 +89,10 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         String apiKey = sharedPreferences.getString("API_KEY", "");
 
+        // Load the initial market data source from SharedPreferences
+        marketDataSource = sharedPreferences.getString("MARKET_DATA_SOURCE", "coincap");
+
+
         if (apiKey.isEmpty()) {
             // Toast.makeText(this, "API key not set. Please go to settings and set the API key.", Toast.LENGTH_SHORT).show();
             // set the font color for the toolbar and overflow item to white
@@ -248,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         textViewDate.setText(currentDate);
 
         // Format the time to show only hours and minutes
-        String currentTime = new SimpleDateFormat(showColon ? "h:mm" : "h mm", Locale.getDefault()).format(new Date());
+        String currentTime = new SimpleDateFormat(showColon ? "h:mm a" : "h mm a", Locale.getDefault()).format(new Date());
         textViewTime.setText(currentTime);
 
         // Toggle the colon every second
@@ -367,31 +371,39 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         if (item.getItemId() == R.id.settings) {
             Log.d("MainActivity", "Settings menu item clicked");
 
+            // Set the market data sources before starting the activity
+            SettingsActivity.setMarketDataSources(BitcoinPriceWrapper.getConfiguredMarketDataSources());
+
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
             return true;
         }
 
+        /**
         // choose font for time
         if (item.getItemId() == R.id.action_choose_font) {
             // Show font chooser dialog
             showFontChooserDialog();
             return true;
         }
+         **/
         return super.onOptionsItemSelected(item);
     }
+
 
     private void showFontChooserDialog() {
         // Create and show the font chooser dialog
         // You can use DialogFragment or create a custom dialog
     }
 
+    /**
     @Override
     protected void onResume() {
         Log.i(TAG,"onResume():" );
 
         super.onResume();
     }
+    **/
 
     @Override
     protected void onPause() {
@@ -400,6 +412,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         super.onPause();
     }
 
+    /**
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         Log.i(TAG,"key:" + key);
@@ -409,5 +422,30 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             Log.i(TAG,"Resetting API_KEY and startWeatherUpdates()");
             startWeatherUpdates();
         }
+    }
+     **/
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        Log.i(TAG, "key: " + key);
+        if (key.equals("API_KEY")) {
+            // Fetch weather data
+            Log.i(TAG, "Resetting API_KEY and startWeatherUpdates()");
+            startWeatherUpdates();
+        } else if (key.equals("MARKET_DATA_SOURCE")) {
+            // Update the market data source when it changes in settings
+            marketDataSource = sharedPreferences.getString(key, "coincap");
+            Log.i(TAG, "Market data source updated to: " + marketDataSource);
+            // Restart market updates with the new source
+            stopMarketUpdates();
+            startMarketUpdates();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Ensure marketDataSource is updated when resuming, in case it was changed
+        marketDataSource = sharedPreferences.getString("MARKET_DATA_SOURCE", "coincap");
     }
 }

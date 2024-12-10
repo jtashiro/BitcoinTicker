@@ -52,7 +52,7 @@
             android:id="@+id/textViewDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
+            android:layout_weight="1.75"
 
             android:gravity="center_horizontal"
             android:includeFontPadding="false"
@@ -85,8 +85,8 @@
             android:padding="0dp"
 
             android:textColor="#F7931A"
-            app:autoSizeMaxTextSize="500sp"
-            app:autoSizeMinTextSize="80sp"
+            app:autoSizeMaxTextSize="300sp"
+            app:autoSizeMinTextSize="40sp"
             app:autoSizeTextType="uniform" />
 
     </LinearLayout>

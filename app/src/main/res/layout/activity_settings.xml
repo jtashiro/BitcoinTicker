@@ -5,11 +5,10 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <EditText
-        android:id="@+id/apiKeyEditText"
+    <Spinner
+        android:id="@+id/marketDataSourceSpinner"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter OpenWeather API Key" />
+        android:layout_height="50dp" />
 
     <Button
         android:id="@+id/saveButton"
