@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- Toolbar for settings -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/black"
+        app:titleTextColor="@color/red"
+        android:layout_alignParentTop="true" />
+
+    <!-- TextView for the time -->
+
+    <!-- LinearLayout for date and weather -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/textViewBTC"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="-100dp"
+        android:layout_marginRight="0dp"
+        android:gravity="center"
+        android:padding="0dp"
+        android:textColor="#F7931A"
+        app:autoSizeMaxTextSize="1000sp"
+        app:autoSizeMinTextSize="50sp"
+        app:autoSizeTextType="uniform"
+        app:fontFamily="sans-serif" />
+
+    <LinearLayout
+        android:id="@+id/dateWeatherLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/textViewBTC"
+        android:layout_alignParentTop="false"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="0dp"
+        android:layout_marginStart="0dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <!-- TextView for the date -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textViewDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+
+            android:gravity="center_horizontal"
+            android:includeFontPadding="false"
+            android:padding="0dp"
+            android:textColor="@color/cyan"
+            app:autoSizeMaxTextSize="900sp"
+            app:autoSizeMinTextSize="80sp"
+            app:autoSizeTextType="uniform" />
+
+        <!-- TextView for the btc -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textViewTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight=".5"
+            android:gravity="left"
+            android:padding="0dp"
+            android:textColor="@color/cyan"
+            app:autoSizeMaxTextSize="500dp"
+            app:autoSizeMinTextSize="80sp"
+            app:autoSizeTextType="uniform" />
+
+        <!-- TextView for the weather -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textViewWeather"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight=".5"
+            android:gravity="center_horizontal"
+            android:padding="0dp"
+
+            android:textColor="#F7931A"
+            app:autoSizeMaxTextSize="500sp"
+            app:autoSizeMinTextSize="80sp"
+            app:autoSizeTextType="uniform" />
+
+    </LinearLayout>
+
+</RelativeLayout>

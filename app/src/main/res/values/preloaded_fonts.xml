@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="preloaded_fonts" translatable="false">
+        <item>@font/b612</item>
+        <item>@font/b612_mono</item>
+        <item>@font/big_shoulders_stencil_text</item>
+        <item>@font/big_shoulders_text_extrabold</item>
+        <item>@font/bungee_outline</item>
+        <item>@font/droid_sans</item>
+        <item>@font/ibm_plex_sans</item>
+        <item>@font/k2d_light</item>
+        <item>@font/roboto_condensed_bold</item>
+        <item>@font/roboto_condensed_regular</item>
+    </array>
+</resources>
