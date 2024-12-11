@@ -67,6 +67,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private SharedPreferences sharedPreferences;
 
     private MaterialTextView textViewBTC;
+    //private AutoResizeTextView textViewBTC;
+
     private ExecutorService executorService;
 
     BitcoinPriceWrapper bitcoinPriceWrapper;
@@ -292,6 +294,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 */
                 Log.i(TAG,marketDataSource + " BTC Price: " + formattedPrice);
                 runOnUiThread(() -> textViewBTC.setText(formattedPrice));
+                runOnUiThread(() -> textViewBTC.requestLayout());
+
                 runOnUiThread(() -> textViewWeather.setText(marketDataSource));
 
                 /**

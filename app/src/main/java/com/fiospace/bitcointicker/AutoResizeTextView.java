@@ -42,6 +42,8 @@ public class AutoResizeTextView extends androidx.appcompat.widget.AppCompatTextV
     }
 
     private void adjustTextSize() {
+        System.out.println("adjusting text size");
+
         if (getWidth() <= 0 || getHeight() <= 0) return;
 
         boundsRect.set(0, 0, getWidth(), getHeight());
@@ -53,6 +55,8 @@ public class AutoResizeTextView extends androidx.appcompat.widget.AppCompatTextV
             textSize--;
             setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
             getPaint().getTextBounds(getText().toString(), 0, getText().length(), textRect);
+            System.out.println("adjusting text size " + textSize);
+
         }
     }
 }

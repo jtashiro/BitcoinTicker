@@ -11,20 +11,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/black"
-        app:titleTextColor="@color/red"
+        app:titleTextColor="#F7931A"
         android:layout_alignParentTop="true" />
 
     <!-- TextView for the time -->
 
     <!-- LinearLayout for date and weather -->
+    <!-- <com.fiospace.bitcointicker.AutoResizeTextView -->
     <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/textViewBTC"
+    android:id="@+id/textViewBTC"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/toolbar"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="0dp"
-        android:layout_marginTop="-100dp"
+        android:layout_marginTop="0dp"
         android:layout_marginRight="0dp"
         android:gravity="center"
         android:padding="0dp"
@@ -32,6 +33,7 @@
         app:autoSizeMaxTextSize="1000sp"
         app:autoSizeMinTextSize="50sp"
         app:autoSizeTextType="uniform"
+        android:autoSizeStepGranularity="1sp"
         app:fontFamily="sans-serif" />
 
     <LinearLayout

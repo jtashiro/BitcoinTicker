@@ -10,7 +10,7 @@ import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-
+import java.util.stream.Collectors;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
@@ -26,7 +26,6 @@ public class BitcoinPriceWrapper {
     private static final String CRYPTOCOMPARE_API_URL = "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD";
     private static final String GEMINI_API_URL = "https://api.gemini.com/v1/pubticker/btcusd";
     private static final String KRAKEN_API_URL = "https://api.kraken.com/0/public/Ticker?pair=XXBTZUSD";
-    private static final String PHEMEX_API_URL = "https://api.phemex.com/public/market/ticker?symbol=BTCUSD";
 
     public static String getPrice(String exchange) throws Exception {
         BigDecimal price = null;
@@ -62,9 +61,7 @@ public class BitcoinPriceWrapper {
             case "kraken":
                 price = getPriceFromKraken();
                 break;
-            case "phemex":
-                price = getPriceFromPhemex();
-                break;
+
             default:
                 throw new IllegalArgumentException("Unsupported exchange: " + exchange);
         }
@@ -229,17 +226,7 @@ public class BitcoinPriceWrapper {
         }
     }
 
-    private static BigDecimal getPriceFromPhemex() throws Exception {
-        logURL(PHEMEX_API_URL);
-        URL url = new URL(PHEMEX_API_URL);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
 
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))) {
-            JSONObject json = new JSONObject(in.readLine());
-            return new BigDecimal(json.getJSONObject("result").getJSONObject("ticker").getString("last"));
-        }
-    }
 
     // Helper method to log the URL that is being called
     private static void logURL(String url) {
@@ -253,9 +240,11 @@ public class BitcoinPriceWrapper {
      */
     public static List<String> getConfiguredMarketDataSources() {
         return Arrays.asList(
-                "binance", "bitfinex", "bitstamp", "coindesk", "coincap", "coinbase", "coingecko",
-                "cryptocompare", "gemini", "kraken", "phemex"
-        );
+                        "binance", "bitfinex", "bitstamp", "coindesk", "coincap", "coinbase", "coingecko",
+                        "cryptocompare", "gemini", "kraken"
+                ).stream()
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     public static void main(String[] args) {
