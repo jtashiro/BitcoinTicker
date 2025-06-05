@@ -20,7 +20,6 @@ public class BitcoinPriceWrapper {
     private static final String BITFINEX_API_URL = "https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD";
     private static final String BITSTAMP_API_URL = "https://www.bitstamp.net/api/v2/ticker/btcusd";
     private static final String COINDESK_API_URL = "https://api.coindesk.com/v1/bpi/currentprice.json";
-    private static final String COINCAP_API_URL = "https://api.coincap.io/v2/assets/bitcoin";
     private static final String COINBASE_API_URL = "https://api.coinbase.com/v2/prices/spot?currency=USD";
     private static final String COINGECKO_API_URL = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd";
     private static final String CRYPTOCOMPARE_API_URL = "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD";
@@ -42,9 +41,6 @@ public class BitcoinPriceWrapper {
                 break;
             case "coindesk":
                 price = getPriceFromCoinDesk();
-                break;
-            case "coincap":
-                price = getPriceFromCoinCap();
                 break;
             case "coinbase":
                 price = getPriceFromCoinbase();
@@ -126,26 +122,6 @@ public class BitcoinPriceWrapper {
 
             JSONObject json = new JSONObject(response.toString());
             return new BigDecimal(json.getJSONObject("bpi").getJSONObject("USD").getString("rate_float"));
-        }
-    }
-
-    private static BigDecimal getPriceFromCoinCap() throws Exception {
-        logURL(COINCAP_API_URL);
-        URL url = new URL(COINCAP_API_URL);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))) {
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-
-            JSONObject json = new JSONObject(response.toString());
-            JSONObject data = json.getJSONObject("data");
-            return new BigDecimal(data.getString("priceUsd"));
         }
     }
 
@@ -240,7 +216,7 @@ public class BitcoinPriceWrapper {
      */
     public static List<String> getConfiguredMarketDataSources() {
         return Arrays.asList(
-                        "binance", "bitfinex", "bitstamp", "coindesk", "coincap", "coinbase", "coingecko",
+                        "binance", "bitfinex", "bitstamp", "coindesk", "coinbase", "coingecko",
                         "cryptocompare", "gemini", "kraken"
                 ).stream()
                 .sorted()
