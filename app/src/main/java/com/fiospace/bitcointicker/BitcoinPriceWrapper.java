@@ -2,12 +2,13 @@ package com.fiospace.bitcointicker;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -19,7 +20,6 @@ public class BitcoinPriceWrapper {
     private static final String BINANCE_API_URL = "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT";
     private static final String BITFINEX_API_URL = "https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD";
     private static final String BITSTAMP_API_URL = "https://www.bitstamp.net/api/v2/ticker/btcusd";
-    private static final String COINDESK_API_URL = "https://api.coindesk.com/v1/bpi/currentprice.json";
     private static final String COINBASE_API_URL = "https://api.coinbase.com/v2/prices/spot?currency=USD";
     private static final String COINGECKO_API_URL = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd";
     private static final String CRYPTOCOMPARE_API_URL = "https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD";
@@ -27,39 +27,27 @@ public class BitcoinPriceWrapper {
     private static final String KRAKEN_API_URL = "https://api.kraken.com/0/public/Ticker?pair=XXBTZUSD";
 
     public static String getPrice(String exchange) throws Exception {
-        BigDecimal price = null;
+        if (exchange == null || exchange.trim().isEmpty()) {
+            throw new IllegalArgumentException("Exchange cannot be null or empty");
+        }
 
-        switch (exchange.toLowerCase()) {
-            case "binance":
-                price = getPriceFromBinance();
-                break;
-            case "bitfinex":
-                price = getPriceFromBitfinex();
-                break;
-            case "bitstamp":
-                price = getPriceFromBitstamp();
-                break;
-            case "coindesk":
-                price = getPriceFromCoinDesk();
-                break;
-            case "coinbase":
-                price = getPriceFromCoinbase();
-                break;
-            case "coingecko":
-                price = getPriceFromCoinGecko();
-                break;
-            case "cryptocompare":
-                price = getPriceFromCryptoCompare();
-                break;
-            case "gemini":
-                price = getPriceFromGemini();
-                break;
-            case "kraken":
-                price = getPriceFromKraken();
-                break;
+        // Normalize exchange name to lowercase
+        String normalizedExchange = exchange.trim().toLowerCase();
 
-            default:
-                throw new IllegalArgumentException("Unsupported exchange: " + exchange);
+        // Construct the method name (e.g., "getPriceFromBinance")
+        String methodName = "getPriceFrom" + normalizedExchange.substring(0, 1).toUpperCase() + normalizedExchange.substring(1);
+
+        BigDecimal price;
+        try {
+            // Get the method dynamically
+            Method method = BitcoinPriceWrapper.class.getDeclaredMethod(methodName);
+            // Invoke the method and cast the result to BigDecimal
+            price = (BigDecimal) method.invoke(null);
+        } catch (NoSuchMethodException e) {
+            throw new IllegalArgumentException("Unsupported exchange: " + normalizedExchange, e);
+        } catch (Exception e) {
+            // Handle invocation errors (e.g., InvocationTargetException, IllegalAccessException)
+            throw new Exception("Error fetching price from " + normalizedExchange + ": " + e.getCause().getMessage(), e);
         }
 
         // Format the price to include commas for thousands and zero decimal places
@@ -106,25 +94,6 @@ public class BitcoinPriceWrapper {
         }
     }
 
-    private static BigDecimal getPriceFromCoinDesk() throws Exception {
-        logURL(COINDESK_API_URL);
-        URL url = new URL(COINDESK_API_URL);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8))) {
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-
-            JSONObject json = new JSONObject(response.toString());
-            return new BigDecimal(json.getJSONObject("bpi").getJSONObject("USD").getString("rate_float"));
-        }
-    }
-
     private static BigDecimal getPriceFromCoinbase() throws Exception {
         logURL(COINBASE_API_URL);
         URL url = new URL(COINBASE_API_URL);
@@ -145,7 +114,7 @@ public class BitcoinPriceWrapper {
         }
     }
 
-    private static BigDecimal getPriceFromCoinGecko() throws Exception {
+    private static BigDecimal getPriceFromCoingecko() throws Exception {
         logURL(COINGECKO_API_URL);
         URL url = new URL(COINGECKO_API_URL);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -157,7 +126,7 @@ public class BitcoinPriceWrapper {
         }
     }
 
-    private static BigDecimal getPriceFromCryptoCompare() throws Exception {
+    private static BigDecimal getPriceFromCryptocompare() throws Exception {
         logURL(CRYPTOCOMPARE_API_URL);
         URL url = new URL(CRYPTOCOMPARE_API_URL);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -202,25 +171,36 @@ public class BitcoinPriceWrapper {
         }
     }
 
-
-
     // Helper method to log the URL that is being called
     private static void logURL(String url) {
         System.out.println("Calling API URL: " + url);
     }
 
     /**
-     * Returns a list of supported market data sources for Bitcoin price fetching.
+     * Returns a list of supported market data sources by inspecting the available getPriceFrom* methods.
      *
      * @return A List of strings representing the names of the market data sources.
      */
     public static List<String> getConfiguredMarketDataSources() {
-        return Arrays.asList(
-                        "binance", "bitfinex", "bitstamp", "coindesk", "coinbase", "coingecko",
-                        "cryptocompare", "gemini", "kraken"
-                ).stream()
-                .sorted()
-                .collect(Collectors.toList());
+        List<String> sources = new ArrayList<>();
+        try {
+            // Get all declared methods in BitcoinPriceWrapper
+            Method[] methods = BitcoinPriceWrapper.class.getDeclaredMethods();
+            for (Method method : methods) {
+                // Look for methods starting with "getPriceFrom"
+                if (method.getName().startsWith("getPriceFrom")) {
+                    // Extract the exchange name (remove "getPriceFrom" prefix)
+                    String exchange = method.getName().substring("getPriceFrom".length());
+                    // Convert to lowercase to match getPrice switch cases
+                    sources.add(exchange.toLowerCase());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error inspecting BitcoinPriceWrapper methods: " + e.getMessage());
+            e.printStackTrace();
+        }
+        // Return sorted list
+        return sources.stream().sorted().collect(Collectors.toList());
     }
 
     public static void main(String[] args) {
