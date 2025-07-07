@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-06-04T23:12:28.650255Z">
+        <DropdownSelection timestamp="2025-07-07T20:42:16.119751Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/jtashiro/.android/avd/K10_Coloroom_Tablet_API_33.avd" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=D112023HGM076026" />
             </handle>
           </Target>
         </DropdownSelection>

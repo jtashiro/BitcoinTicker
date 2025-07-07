@@ -41,6 +41,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.fiospace.bitcoin_price_fetcher.BitcoinPriceFetcher;
+import com.fiospace.bitcointicker.NetworkUtils;
 
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = "MainActivity";
@@ -70,6 +71,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private String marketDataSource = "coinbase";
     private List<String> availableMarketSources;
+
+    private String networkStatus;
+    private boolean wasNetworkAvailable = false; // Track previous network state
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +106,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         textViewBTC = findViewById(R.id.textViewBTC);
 
         executorService = Executors.newSingleThreadExecutor();
+
+        // Initialize network status
+        checkNetworkAndInitialize();
 
         runnable = new Runnable() {
             @Override
@@ -266,5 +273,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     protected void onResume() {
         super.onResume();
         marketDataSource = sharedPreferences.getString("MARKET_DATA_SOURCE", marketDataSource);
+    }
+
+    private void checkNetworkAndInitialize() {
+        boolean isNetworkAvailable = NetworkUtils.isNetworkAvailable(this);
+        if (isNetworkAvailable) {
+            Log.i(TAG, "Network is available. Initializing app components.");
+            networkStatus = "Network Available";
+
+        } else {
+            Log.w(TAG, "No network connection available at startup.");
+            networkStatus = "No Network";
+
+        }
+        wasNetworkAvailable = isNetworkAvailable;
     }
 }
