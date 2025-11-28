@@ -1,3 +1,24 @@
+import java.io.ByteArrayOutputStream
+
+// Helper to run git commands
+fun runGitCommand(vararg args: String): String {
+    val stdout = ByteArrayOutputStream()
+    exec {
+        commandLine("git", *args)
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
+}
+
+// Get commit count for versionCode
+fun gitCommitCount(): Int = runGitCommand("rev-list", "--count", "HEAD").toInt()
+
+// Get latest tag for versionName (fallback if none)
+fun gitTagOrDefault(): String {
+    val tag = runGitCommand("describe", "--tags", "--abbrev=0")
+    return if (tag.isNotEmpty()) tag.removePrefix("v") else "0.0.0"
+}
+
 plugins {
     alias(libs.plugins.android.application)
 
@@ -11,8 +32,14 @@ android {
         applicationId = "com.fiospace.bitcointicker"
         minSdk = 26
         targetSdk = 35
-        versionCode = 7
-        versionName = "1.6"
+    //    versionCode = 8
+    //    versionName = "1.8"
+        // Auto-generated versionCode from commit count
+        versionCode = gitCommitCount()
+
+        // Semantic versionName with commit suffix
+        //versionName = "1.8.${versionCode}"
+        versionName = gitTagOrDefault()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -48,7 +75,7 @@ dependencies {
     //implementation(fileTree(dir: 'libs', include: ['*.jar']))
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-
+    implementation(libs.leanback)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
