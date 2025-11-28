@@ -7,11 +7,16 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- TV compatibility declarations -->
-    <uses-feature android:name="android.software.leanback" android:required="true" />
+    <!-- Make leanback optional so the same APK can be installed on phones/tablets and Android TV -->
+    <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
-    <supports-screens android:largeScreens="true"
+    <supports-screens
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
         android:xlargeScreens="true"
-        android:anyDensity="true" />
+        android:anyDensity="true"
+        android:resizeable="true" />
 
     <application
         android:allowBackup="true"
