@@ -1,21 +1,19 @@
-# Gradle files
+# Gradle
 .gradle/
 build/
 **/build/
-# Ignore build outputs
+
+# Build outputs
 *.apk
+*.ap_
 *.aab
-/build/
-/app/build/
+*.dex
 
-
-# Local configuration files (SDK path, etc.)
+# Local configuration
 local.properties
 
 # IDE files
 *.iml
-
- # Ignore all .idea by default
 .idea/*
 # Allow only shared configs if you want them
 !.idea/runConfigurations.xml
@@ -34,22 +32,13 @@ captures/
 .cxx/
 cmake-build-*/
 
-# Built application files
-*.apk
-*.ap_
-*.aab
-*.dex
-
-# Java class files
-*.class
-
 # Generated files
 bin/
 gen/
 out/
 gen-external-apklibs/
 
-# Log files
+# Logs
 *.log
 
 # Keystore files (NEVER commit these unless you have a secure reason)
