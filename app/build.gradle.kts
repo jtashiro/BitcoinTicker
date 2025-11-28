@@ -46,7 +46,7 @@ android {
     defaultConfig {
         applicationId = "com.fiospace.bitcointicker"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 35
     //    versionCode = 8
     //    versionName = "1.8"
         // Auto-generated versionCode from commit count with safe fallback
