@@ -26,6 +26,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:banner="@drawable/bitcoin_48"
         android:theme="@style/Theme.BitcoinTicker"
         tools:targetApi="31">
 
