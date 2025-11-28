@@ -2,24 +2,26 @@
 .gradle/
 build/
 **/build/
+# Ignore build outputs
+*.apk
+*.aab
+/build/
+/app/build/
+
 
 # Local configuration files (SDK path, etc.)
 local.properties
 
 # IDE files
 *.iml
-.idea/caches/
-.idea/libraries/
-.idea/modules.xml
-.idea/workspace.xml
-.idea/navEditor.xml
-.idea/assetWizardSettings.xml
-.idea/gradle.xml
-.idea/migrations.xml
-.idea/shelf/
-.idea/vcs.xml
-.idea/runConfigurations/   # usually user-specific
-.idea/misc.xml             # often user-specific
+
+ # Ignore all .idea by default
+.idea/*
+# Allow only shared configs if you want them
+!.idea/runConfigurations.xml
+!.idea/codeStyles/
+!.idea/misc.xml
+!.idea/modules.xml
 
 # OS files
 .DS_Store

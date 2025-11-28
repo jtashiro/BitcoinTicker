@@ -1,22 +1,37 @@
-import java.io.ByteArrayOutputStream
-
 // Helper to run git commands
 fun runGitCommand(vararg args: String): String {
-    val stdout = ByteArrayOutputStream()
-    exec {
-        commandLine("git", *args)
-        standardOutput = stdout
+    try {
+        // Use Java's ProcessBuilder so we don't depend on Gradle Exec services at configuration time
+        val command = listOf("git", *args)
+        val process = ProcessBuilder(command)
+            .redirectErrorStream(true)
+            .start()
+        val output = process.inputStream.bufferedReader().use { it.readText() }.trim()
+        val exitCode = process.waitFor()
+        return if (exitCode == 0) output else ""
+    } catch (_: Exception) {
+        // If git isn't available or something fails, return empty string
+        return ""
     }
-    return stdout.toString().trim()
 }
 
-// Get commit count for versionCode
-fun gitCommitCount(): Int = runGitCommand("rev-list", "--count", "HEAD").toInt()
+// Get commit count for versionCode, safe fallback when git isn't available or output is invalid
+fun gitCommitCount(default: Int = 1): Int {
+    val out = runGitCommand("rev-list", "--count", "HEAD").trim()
+    return out.toIntOrNull() ?: default
+}
 
 // Get latest tag for versionName (fallback if none)
 fun gitTagOrDefault(): String {
     val tag = runGitCommand("describe", "--tags", "--abbrev=0")
     return if (tag.isNotEmpty()) tag.removePrefix("v") else "0.0.0"
+}
+
+tasks.register("printVersion") {
+    doLast {
+        println("Version Code: ${android.defaultConfig.versionCode}")
+        println("Version Name: ${android.defaultConfig.versionName}")
+    }
 }
 
 plugins {
@@ -26,15 +41,15 @@ plugins {
 
 android {
     namespace = "com.fiospace.bitcointicker"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.fiospace.bitcointicker"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
     //    versionCode = 8
     //    versionName = "1.8"
-        // Auto-generated versionCode from commit count
+        // Auto-generated versionCode from commit count with safe fallback
         versionCode = gitCommitCount()
 
         // Semantic versionName with commit suffix
