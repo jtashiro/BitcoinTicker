@@ -51,3 +51,8 @@ lint-results-*.html
 
 # Heap dumps
 *.hprof
+
+# CI/secret artifacts
+app/keystore.jks
+keystore.properties
+play-service-account.json

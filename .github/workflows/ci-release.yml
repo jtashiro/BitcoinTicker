@@ -1,0 +1,106 @@
+name: CI Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      track:
+        description: 'Play store track to publish to (internal, alpha, beta, production)'
+        required: false
+        default: 'production'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    env:
+      JAVA_HOME_17: /usr/lib/jvm/adoptopenjdk-17-hotspot || /usr/lib/jvm/temurin-17
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Decode keystore
+        if: secrets.KEYSTORE_BASE64 != ''
+        run: |
+          echo "Decoding keystore..."
+          echo "$KEYSTORE_BASE64" | base64 --decode > app/keystore.jks
+
+      - name: Create keystore properties
+        if: secrets.KEYSTORE_BASE64 != ''
+        run: |
+          cat > keystore.properties <<EOF
+          storeFile=keystore.jks
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          EOF
+
+      - name: Write Play service account JSON
+        if: secrets.PLAY_SERVICE_ACCOUNT_JSON != ''
+        run: |
+          echo "Writing play-service-account.json"
+          echo "${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}" > play-service-account.json
+
+      - name: Grant execute to gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build release AAB
+        run: |
+          ./gradlew :app:clean :app:bundleRelease --no-daemon --warning-mode all
+
+      - name: Upload mapping file as artifact (optional)
+        if: filesExists('app/build/outputs/mapping/release/mapping.txt')
+        uses: actions/upload-artifact@v4
+        with:
+          name: mapping.txt
+          path: app/build/outputs/mapping/release/mapping.txt
+
+      - name: Publish to Google Play (Gradle Play Publisher)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TRACK=${{ github.event.inputs.track || 'production' }}
+          echo "Publishing to Play track: $TRACK"
+          ./gradlew :app:publishReleaseBundle -PplayServiceAccountCredentials=play-service-account.json -Ptrack=$TRACK --no-daemon
+
+      - name: Create Git tag
+        id: tag
+        run: |
+          VERSION=$(./gradlew -q :app:printVersion | sed -n 's/Version Name: //p' | tr -d '\r')
+          TAG_NAME="v${VERSION}"
+          echo "Tagging $TAG_NAME"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag $TAG_NAME || true
+          git push origin --tags || true
+          echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload AAB to release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+# Helper function used by workflow to check file existence
+# Note: inline file check used in a step 'if' may not work on all runners; using an artifact upload step guarded by the if above.
+

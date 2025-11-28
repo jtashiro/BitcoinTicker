@@ -1,3 +1,11 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+plugins {
+    alias(libs.plugins.android.application)
+    id("com.github.triplet.play") version "3.10.0"
+}
+
 // Helper to run git commands
 fun runGitCommand(vararg args: String): String {
     try {
@@ -34,10 +42,25 @@ tasks.register("printVersion") {
     }
 }
 
-plugins {
-    alias(libs.plugins.android.application)
+// Load keystore properties (created by CI from secrets) if present — parse manually to avoid java.* imports
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProps: Map<String, String> = if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.readLines()
+        .map { it.trim() }
+        .filter { it.isNotEmpty() && !it.startsWith("#") }
+        .mapNotNull { line ->
+            val idx = line.indexOf('=')
+            if (idx > 0) {
+                val key = line.substring(0, idx).trim()
+                val value = line.substring(idx + 1).trim()
+                key to value
+            } else null
+        }
+        .toMap()
+} else emptyMap()
 
-}
+// Helper function to get keystore property with optional default
+fun keystoreProp(key: String, default: String? = null): String? = keystoreProps[key] ?: default
 
 android {
     namespace = "com.fiospace.bitcointicker"
@@ -47,16 +70,20 @@ android {
         applicationId = "com.fiospace.bitcointicker"
         minSdk = 26
         targetSdk = 35
-    //    versionCode = 8
-    //    versionName = "1.8"
         // Auto-generated versionCode from commit count with safe fallback
         versionCode = gitCommitCount()
-
-        // Semantic versionName with commit suffix
-        //versionName = "1.8.${versionCode}"
         versionName = gitTagOrDefault()
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            val storeFilePath = keystoreProp("storeFile") ?: "keystore.jks"
+            storeFile = file(storeFilePath)
+            storePassword = keystoreProp("storePassword")
+            keyAlias = keystoreProp("keyAlias")
+            keyPassword = keystoreProp("keyPassword")
+        }
     }
 
     buildTypes {
@@ -66,6 +93,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.findByName("release")
         }
     }
     compileOptions {
@@ -99,4 +127,13 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
+}
+
+// Configure Gradle Play Publisher to use a service account JSON written by CI at runtime
+play {
+    // CI will create `play-service-account.json` in the repo root during the workflow
+    serviceAccountCredentials.set(file("play-service-account.json"))
+    // Publish app bundles by default
+    defaultToAppBundles.set(true)
+    // Track will be passed from workflow or default to 'production'
 }
