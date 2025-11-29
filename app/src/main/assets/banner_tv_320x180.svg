@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bg" x1="0%" x2="0%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#01203F" />
+      <stop offset="50%" stop-color="#054A2E" />
+      <stop offset="100%" stop-color="#0A7A50" />
+    </linearGradient>
+    <radialGradient id="coinGrad" cx="30%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.8" />
+      <stop offset="20%" stop-color="#FFD166" />
+      <stop offset="100%" stop-color="#F2A900" />
+    </radialGradient>
+    <filter id="coinShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="320" height="180" rx="6" ry="6" fill="url(#bg)" />
+
+  <!-- Coin emblem -->
+  <g transform="translate(16,22)">
+    <circle cx="48" cy="48" r="48" fill="url(#coinGrad)" filter="url(#coinShadow)" />
+    <circle cx="48" cy="48" r="36" fill="#ffffff" opacity="0.08" />
+    <!-- Big B stroke -->
+    <text x="48" y="66" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="56" fill="#8a5b00">B</text>
+  </g>
+
+  <!-- Title text -->
+  <g transform="translate(130,48)">
+    <text x="0" y="0" font-family="'Big Shoulders Stencil Text', sans-serif" font-size="28" fill="#FFFFFF" font-weight="700">Bitcoin</text>
+    <text x="0" y="36" font-family="'Big Shoulders Stencil Text', sans-serif" font-size="20" fill="#D7F5E6" font-weight="600">Ticker</text>
+  </g>
+
+  <!-- Right accent bar (subtle) -->
+  <rect x="124" y="112" rx="4" ry="4" width="176" height="28" fill="#00000000" />
+
+</svg>
+

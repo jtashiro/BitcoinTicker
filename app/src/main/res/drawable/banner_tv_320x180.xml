@@ -2,3 +2,4 @@
 <bitmap xmlns:android="http://schemas.android.com/apk/res/android"
     android:src="@drawable/banner_tv_320x180_drawable"
     android:antialias="true" />
+
