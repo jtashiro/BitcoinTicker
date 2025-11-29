@@ -24,6 +24,17 @@ Common tasks
 Open in Android Studio
 - File > Open... > select this project's folder.
 
+Building
+--------
+
+Before building the project, you need to generate some image assets. A Python script is provided to automate this process. From the project root, run:
+
+```bash
+./tools/generate_play_assets.py
+```
+
+This will create the necessary banner and icon files in the correct locations.
+
 Build (local)
 -------------
 From the project root in a terminal:
@@ -144,5 +155,3 @@ If you'd like, I can:
 - Add a `signingConfigs` example directly into `app/build.gradle.kts` in a safe way (using properties),
 - Add a small GitHub Actions workflow to build and optionally upload an internal test AAB,
 - Or help you fix the AppCompat theme runtime crash by inspecting `AndroidManifest.xml` and your activity theme.
-
-
