@@ -26,10 +26,12 @@
     <text x="0" y="24" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="64" fill="#8a5b00">B</text>
   </g>
 
-  <!-- Title text larger and filling width -->
-  <g transform="translate(120,48)">
-    <text x="0" y="0" font-family="'Big Shoulders Stencil Text', sans-serif" font-size="36" fill="#FFFFFF" font-weight="800">Bitcoin Ticker</text>
+  <!-- Title text centered and stacked using tspans (fallback to sans-serif to avoid missing-font truncation) -->
+  <g>
+    <text x="180" y="60" text-anchor="middle" font-family="sans-serif" font-weight="800" fill="#FFFFFF">
+      <tspan x="180" dy="0" font-size="36">Bitcoin</tspan>
+      <tspan x="180" dy="34" font-size="22" fill="#D7F5E6" font-weight="700">Ticker</tspan>
+    </text>
   </g>
 
 </svg>
-
