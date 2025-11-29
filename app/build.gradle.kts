@@ -42,19 +42,6 @@ tasks.register("printVersion") {
     }
 }
 
-// Print computed variant version codes (phone/tv) derived from git commit count base
-tasks.register("printVariantVersions") {
-    doLast {
-        val base = gitCommitCount()
-        val versionName = gitTagOrDefault()
-        println("Computed baseVersion (git commit count): $base")
-        println("Version Name: $versionName")
-        println("default (no flavor) versionCode: $base")
-        println("phone versionCode: ${base * 100 + 1}")
-        println("tv versionCode: ${base * 100 + 2}")
-    }
-}
-
 // Load keystore properties (created by CI from secrets) if present — parse manually to avoid java.* imports
 val keystorePropertiesFile = rootProject.file("keystore.properties")
 val keystoreProps: Map<String, String> = if (keystorePropertiesFile.exists()) {
@@ -90,21 +77,6 @@ android {
         versionCode = baseVersion
         versionName = gitTagOrDefault()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    // Add flavors for phone and tv so we can provide different manifests/resources
-    flavorDimensions += "platform"
-    productFlavors {
-        create("phone") {
-            dimension = "platform"
-            // Use distinct versionCode per-flavor: base * 100 + small offset
-            versionCode = baseVersion * 100 + 1
-        }
-        create("tv") {
-            dimension = "platform"
-            // Different offset to avoid collisions with phone APKs/bundles
-            versionCode = baseVersion * 100 + 2
-        }
     }
 
     signingConfigs {
@@ -164,7 +136,15 @@ java {
 play {
     // CI will create `play-service-account.json` in the repo root during the workflow
     serviceAccountCredentials.set(file("play-service-account.json"))
-    // Publish app bundles by default
+    // Publish app bundles by default (AAB)
     defaultToAppBundles.set(true)
-    // Track will be passed from workflow or default to 'production'
+    // Default track for automated publishing — change to `internal`/`beta` as needed
+    track.set("production")
+
+    // By default the plugin will publish the `release` variant/bundle. If you need to
+    // publish a specific variant, you can set `variantToPublish` (example commented out):
+    // variantToPublish.set("release")
+
+    // Optional: configure release status (e.g. "draft", "inProgress", "completed")
+    // releaseStatus.set("draft")
 }
