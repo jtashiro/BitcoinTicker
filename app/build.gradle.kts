@@ -76,6 +76,19 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Add flavors for phone and tv so we can provide different manifests/resources
+    flavorDimensions += "platform"
+    productFlavors {
+        create("phone") {
+            dimension = "platform"
+            // phone-specific overrides can go here
+        }
+        create("tv") {
+            dimension = "platform"
+            // tv-specific overrides can go here
+        }
+    }
+
     signingConfigs {
         create("release") {
             val storeFilePath = keystoreProp("storeFile") ?: "keystore.jks"

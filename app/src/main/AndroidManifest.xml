@@ -6,10 +6,11 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- TV compatibility declarations -->
-    <!-- Make leanback optional so the same APK can be installed on phones/tablets and Android TV -->
-    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <!-- Declare optional platform features here so IDE/lint sees both capabilities; per-flavor manifests will set the required=true/false appropriately -->
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+
+    <!-- Keep generic screen support in main manifest; per-flavor manifests will declare platform features and launchers -->
     <supports-screens
         android:smallScreens="true"
         android:normalScreens="true"
@@ -36,7 +37,7 @@
             android:exported="false"
             android:label="@string/title_activity_settings" />
 
-        <!-- Main activity -->
+        <!-- Main activity: launcher intent-filters moved to flavor-specific manifests -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -44,17 +45,7 @@
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name">
 
-            <!-- Phone/tablet launcher -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-
-            <!-- TV launcher -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-            </intent-filter>
+            <!-- Intent-filters (LAUNCHER/LEANBACK) are provided per-variant in src/phone and src/tv -->
         </activity>
 
         <!-- Optional metadata -->
