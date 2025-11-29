@@ -42,6 +42,19 @@ tasks.register("printVersion") {
     }
 }
 
+// Print computed variant version codes (phone/tv) derived from git commit count base
+tasks.register("printVariantVersions") {
+    doLast {
+        val base = gitCommitCount()
+        val versionName = gitTagOrDefault()
+        println("Computed baseVersion (git commit count): $base")
+        println("Version Name: $versionName")
+        println("default (no flavor) versionCode: $base")
+        println("phone versionCode: ${base * 100 + 1}")
+        println("tv versionCode: ${base * 100 + 2}")
+    }
+}
+
 // Load keystore properties (created by CI from secrets) if present — parse manually to avoid java.* imports
 val keystorePropertiesFile = rootProject.file("keystore.properties")
 val keystoreProps: Map<String, String> = if (keystorePropertiesFile.exists()) {
@@ -66,12 +79,15 @@ android {
     namespace = "com.fiospace.bitcointicker"
     compileSdk = 36
 
+    // compute a stable base version from git and use flavor offsets to guarantee uniqueness
+    val baseVersion = gitCommitCount()
+
     defaultConfig {
         applicationId = "com.fiospace.bitcointicker"
         minSdk = 26
         targetSdk = 35
-        // Auto-generated versionCode from commit count with safe fallback
-        versionCode = gitCommitCount()
+        // keep a readable base versionCode for simple debug builds
+        versionCode = baseVersion
         versionName = gitTagOrDefault()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -81,11 +97,13 @@ android {
     productFlavors {
         create("phone") {
             dimension = "platform"
-            // phone-specific overrides can go here
+            // Use distinct versionCode per-flavor: base * 100 + small offset
+            versionCode = baseVersion * 100 + 1
         }
         create("tv") {
             dimension = "platform"
-            // tv-specific overrides can go here
+            // Different offset to avoid collisions with phone APKs/bundles
+            versionCode = baseVersion * 100 + 2
         }
     }
 
