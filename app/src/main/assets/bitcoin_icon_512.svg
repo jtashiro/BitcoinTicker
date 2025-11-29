@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="g1" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#FFF9E6" />
+      <stop offset="40%" stop-color="#FFD166" />
+      <stop offset="100%" stop-color="#F2A900" />
+    </radialGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- full white background to ensure no transparency -->
+  <rect width="512" height="512" fill="#FFFFFF" />
+
+  <!-- coin -->
+  <g transform="translate(256,220)" filter="url(#shadow)">
+    <circle cx="0" cy="0" r="200" fill="url(#g1)" />
+    <circle cx="0" cy="0" r="150" fill="#FFFFFF" opacity="0.06" />
+    <text x="0" y="60" text-anchor="middle" font-family="Sans" font-weight="700" font-size="220" fill="#8a5b00">B</text>
+  </g>
+
+  <!-- small accent bar at bottom to mimic banner aesthetic -->
+  <rect x="0" y="440" width="512" height="72" fill="#001A1A" opacity="0.04" />
+</svg>
+

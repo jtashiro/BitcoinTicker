@@ -41,7 +41,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.BitcoinTicker"
-        android:banner="@drawable/bitcoin_48"
+        android:banner="@drawable/banner_tv_320x180_wrapper"
     android:resizeableActivity="true"
     android:usesCleartextTraffic="false">
 

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180">
+  <defs>
+    <linearGradient id="bg2" x1="0%" x2="0%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#01203F" />
+      <stop offset="60%" stop-color="#054A2E" />
+      <stop offset="100%" stop-color="#0A7A50" />
+    </linearGradient>
+    <radialGradient id="coinGrad2" cx="30%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#FFF9E6" />
+      <stop offset="30%" stop-color="#FFD166" />
+      <stop offset="100%" stop-color="#F2A900" />
+    </radialGradient>
+    <filter id="coinShadow2" x="-100%" y="-100%" width="300%" height="300%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Full background -->
+  <rect width="320" height="180" fill="url(#bg2)" />
+
+  <!-- Larger coin emblem (fill vertically) -->
+  <g transform="translate(40,44)" filter="url(#coinShadow2)">
+    <circle cx="0" cy="0" r="56" fill="url(#coinGrad2)" />
+    <circle cx="0" cy="0" r="40" fill="#ffffff" opacity="0.06" />
+    <text x="0" y="24" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="64" fill="#8a5b00">B</text>
+  </g>
+
+  <!-- Title text larger and filling width -->
+  <g transform="translate(120,48)">
+    <text x="0" y="0" font-family="'Big Shoulders Stencil Text', sans-serif" font-size="36" fill="#FFFFFF" font-weight="800">Bitcoin Ticker</text>
+  </g>
+
+</svg>
+

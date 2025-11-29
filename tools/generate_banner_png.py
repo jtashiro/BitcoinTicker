@@ -4,15 +4,89 @@ Generate a 320x180 PNG banner (no external dependencies) with supersampling for 
 Writes:
  - app/src/main/res/drawable/banner_tv_320x180.png
  - app/src/main/res/drawable/banner_tv_320x180_drawable.png
+
+If an SVG source exists at app/src/main/assets/banner_tv_320x180.svg (or res/drawable/banner_tv_320x180.svg)
+and an SVG rasterizer is available (rsvg-convert, cairosvg, or ImageMagick convert), prefer using it so
+any embedded text (e.g. "Bitcoin Ticker") in the SVG is preserved in the PNG.
 """
 import struct
 import zlib
 import math
+import os
+import subprocess
+import sys
 
 W = 320
 H = 180
 OUT = "app/src/main/res/drawable/banner_tv_320x180.png"
 OUT2 = "app/src/main/res/drawable/banner_tv_320x180_drawable.png"
+
+# possible SVG paths (prefer res/drawable then assets)
+SVG_CANDIDATES = [
+    "app/src/main/res/drawable/banner_tv_320x180.svg",
+    "app/src/main/assets/banner_tv_320x180.svg",
+]
+
+# Try to rasterize the SVG if available
+def try_rasterize_svg():
+    svg_path = None
+    for p in SVG_CANDIDATES:
+        if os.path.exists(p):
+            svg_path = p
+            break
+    if not svg_path:
+        return False
+
+    # Try rsvg-convert
+    try:
+        if subprocess.call(["rsvg-convert", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
+            try:
+                subprocess.check_call(["rsvg-convert", "-w", str(W), "-h", str(H), "-o", OUT, svg_path])
+                # also copy to OUT2
+                with open(OUT, "rb") as src, open(OUT2, "wb") as dst:
+                    dst.write(src.read())
+                print('Wrote', OUT, 'and', OUT2, '(from SVG via rsvg-convert)')
+                return True
+            except subprocess.CalledProcessError:
+                pass
+    except FileNotFoundError:
+        pass
+
+    # Try cairosvg python package
+    try:
+        import cairosvg
+        try:
+            cairosvg.svg2png(url=svg_path, write_to=OUT, output_width=W, output_height=H)
+            with open(OUT, "rb") as src, open(OUT2, "wb") as dst:
+                dst.write(src.read())
+            print('Wrote', OUT, 'and', OUT2, '(from SVG via cairosvg)')
+            return True
+        except Exception:
+            pass
+    except Exception:
+        pass
+
+    # Try ImageMagick convert
+    try:
+        if subprocess.call(["convert", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
+            try:
+                subprocess.check_call(["convert", svg_path, "-background", "none", "-resize", f"{W}x{H}!", OUT])
+                with open(OUT, "rb") as src, open(OUT2, "wb") as dst:
+                    dst.write(src.read())
+                print('Wrote', OUT, 'and', OUT2, '(from SVG via ImageMagick convert)')
+                return True
+            except subprocess.CalledProcessError:
+                pass
+    except FileNotFoundError:
+        pass
+
+    return False
+
+# If rasterization succeeded, exit.
+if try_rasterize_svg():
+    sys.exit(0)
+
+# --- Fallback: procedural generation (original implementation) ---
 
 SCALE = 4  # supersample factor
 SW = W * SCALE
@@ -121,7 +195,6 @@ raw = b''.join(rows)
 comp = zlib.compress(raw, level=9)
 
 # PNG writer
-import sys
 
 def png_chunk(type_bytes, data_bytes):
     chunk = struct.pack('!I', len(data_bytes)) + type_bytes + data_bytes

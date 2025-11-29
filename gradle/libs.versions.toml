@@ -22,7 +22,7 @@ espresso-core = { group = "androidx.test.espresso", name = "espresso-core", vers
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 leanback = { module = "androidx.leanback:leanback", version.ref = "leanback" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-activity = { group = "androidx.activity", name = "activity", version = "1.9.3" }
+activity = { group = "androidx.activity", name = "activity", version = "1.12.0" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version = "2.2.0" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "converterGson" }

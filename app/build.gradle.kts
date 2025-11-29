@@ -1,5 +1,4 @@
-import java.util.Properties
-import java.io.FileInputStream
+import java.util.concurrent.TimeUnit
 
 plugins {
     alias(libs.plugins.android.application)
@@ -33,6 +32,84 @@ fun gitCommitCount(default: Int = 1): Int {
 fun gitTagOrDefault(): String {
     val tag = runGitCommand("describe", "--tags", "--abbrev=0")
     return if (tag.isNotEmpty()) tag.removePrefix("v") else "0.0.0"
+}
+// Kotlin
+tasks.register("runPythonScript") {
+    doLast {
+        // Candidate interpreter locations to check (Homebrew M1/M2, Intel, system, and PATH fallback)
+        val candidates = listOf(
+            "/opt/homebrew/bin/python3",
+            "/usr/local/bin/python3",
+            "/usr/bin/python3",
+            "python3"
+        )
+
+        // Find a candidate that returns a zero exit code for `--version` quickly
+        val pythonCmd: String? = candidates.firstOrNull { cmd ->
+            try {
+                val p = ProcessBuilder(listOf(cmd, "--version"))
+                    .redirectErrorStream(true)
+                    .start()
+                if (!p.waitFor(3, TimeUnit.SECONDS)) {
+                    p.destroy()
+                    false
+                } else {
+                    p.exitValue() == 0
+                }
+            } catch (_: Exception) {
+                false
+            }
+        }
+
+        if (pythonCmd == null) {
+            logger.warn("No python3 interpreter found (checked /opt/homebrew/bin, /usr/local/bin, /usr/bin, and PATH). Skipping banner generation.")
+            return@doLast
+        }
+
+        logger.lifecycle("Using python interpreter: $pythonCmd")
+
+        val scriptFile = file("../tools/generate_banner_png.py")
+        if (!scriptFile.exists()) {
+            logger.lifecycle("Banner generation script not found at ${scriptFile.absolutePath}; skipping.")
+            return@doLast
+        }
+
+        // Run the python script using ProcessBuilder directly to avoid Gradle treating non-zero exit as exception
+        try {
+            val pb = ProcessBuilder(listOf(pythonCmd, scriptFile.absolutePath))
+            pb.redirectErrorStream(false)
+            val process = pb.start()
+
+            val stdoutBytes = process.inputStream.readAllBytes()
+            val stderrBytes = process.errorStream.readAllBytes()
+
+            // wait with timeout
+            val finished = process.waitFor(60, TimeUnit.SECONDS)
+            if (!finished) {
+                process.destroyForcibly()
+                logger.warn("Banner generation timed out after 60s. Process destroyed.")
+                return@doLast
+            }
+
+            val exitCode = process.exitValue()
+            val stdout = String(stdoutBytes)
+            val stderr = String(stderrBytes)
+
+            if (exitCode != 0) {
+                logger.warn("Python script exited with code $exitCode")
+                logger.warn("Interpreter used: $pythonCmd")
+                logger.warn("Script: ${scriptFile.absolutePath}")
+                if (stdout.isNotBlank()) logger.warn("stdout:\n$stdout")
+                if (stderr.isNotBlank()) logger.warn("stderr:\n$stderr")
+                logger.warn("Continuing build despite banner script failure. If you want the build to fail on script errors, adjust the task.")
+            } else {
+                logger.lifecycle("Banner generation succeeded. Output:\n$stdout")
+            }
+        } catch (e: Exception) {
+            logger.warn("Exception while running banner generation script: ${e.message}")
+            // don't fail the build; just warn
+        }
+    }
 }
 
 tasks.register("printVersion") {
