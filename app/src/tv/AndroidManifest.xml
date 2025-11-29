@@ -7,7 +7,7 @@
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
     <application
-        android:banner="@drawable/banner_tv_320x180_drawable"
+        android:banner="@drawable/banner_tv_320x180_wrapper"
         tools:replace="android:banner">
         <activity android:name=".MainActivity">
             <!-- TV launcher: LEANBACK_LAUNCHER required for Play to identify TV apps -->
