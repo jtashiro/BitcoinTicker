@@ -1,4 +1,5 @@
 import java.util.concurrent.TimeUnit
+import java.io.ByteArrayOutputStream
 
 plugins {
     alias(libs.plugins.android.application)
@@ -224,4 +225,60 @@ play {
 
     // Optional: configure release status (e.g. "draft", "inProgress", "completed")
     // releaseStatus.set("draft")
+}
+
+tasks.register("installDebugSoftly") {
+    group = "install"
+    description = "Installs the debug APK on all connected devices, treating installation failures as warnings."
+
+    doLast {
+        val adbPath = android.adbExecutable.absolutePath
+        val apkFile = file("build/outputs/apk/debug/app-debug.apk")
+
+        if (!apkFile.exists()) {
+            logger.warn("APK file not found at ${apkFile.absolutePath}, skipping installation.")
+            return@doLast
+        }
+
+        val devicesOutput = ByteArrayOutputStream().use { outputStream ->
+            project.exec {
+                commandLine(adbPath, "devices")
+                standardOutput = outputStream
+            }.assertNormalExitValue()
+            outputStream.toString()
+        }
+
+        val devices = devicesOutput.lines()
+            .drop(1)
+            .filter { it.isNotBlank() }
+            .map { it.split("\\s+".toRegex()).first() }
+            .filter { it.isNotBlank() }
+
+        if (devices.isEmpty()) {
+            logger.lifecycle("No devices connected for installation.")
+            return@doLast
+        }
+
+        devices.forEach { deviceId ->
+            logger.lifecycle("Installing APK on device '$deviceId'...")
+            val result = project.exec {
+                commandLine(adbPath, "-s", deviceId, "install", "-r", "-t", apkFile.absolutePath)
+                isIgnoreExitValue = true
+            }
+            if (result.exitValue != 0) {
+                logger.warn("Installation failed on device '$deviceId' with exit code ${result.exitValue}. Continuing...")
+            } else {
+                logger.lifecycle("Installation successful on device '$deviceId'.")
+            }
+        }
+    }
+}
+
+// Ensure that when the debug APK is assembled, we automatically install it to the connected device.
+// Use finalizedBy so we don't create a circular dependency (installDebug usually depends on assembleDebug).
+gradle.projectsEvaluated {
+    tasks.matching { it.name == "assembleDebug" }.configureEach {
+        // run installDebugSoftly after assembleDebug finishes
+        finalizedBy("installDebugSoftly")
+    }
 }
