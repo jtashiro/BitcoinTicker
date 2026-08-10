@@ -72,7 +72,7 @@
             android:layout_weight=".5"
             android:gravity="left"
             android:padding="0dp"
-            android:textColor="@color/cyan"
+            android:textColor="@color/yellow"
             app:autoSizeMaxTextSize="500dp"
             app:autoSizeMinTextSize="80sp"
             app:autoSizeTextType="uniform" />

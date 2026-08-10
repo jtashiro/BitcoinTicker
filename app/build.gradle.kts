@@ -1,5 +1,7 @@
 import java.util.concurrent.TimeUnit
 import java.io.ByteArrayOutputStream
+import org.gradle.process.ExecOperations
+import javax.inject.Inject
 
 plugins {
     alias(libs.plugins.android.application)
@@ -227,21 +229,26 @@ play {
     // releaseStatus.set("draft")
 }
 
-tasks.register("installDebugSoftly") {
-    group = "install"
-    description = "Installs the debug APK on all connected devices, treating installation failures as warnings."
+abstract class InstallDebugSoftlyTask @Inject constructor(private val execOps: ExecOperations) : DefaultTask() {
+    @get:Internal
+    abstract val adbExecutable: Property<String>
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    @get:Optional
+    abstract val apkFile: RegularFileProperty
 
-    doLast {
-        val adbPath = android.adbExecutable.absolutePath
-        val apkFile = file("build/outputs/apk/debug/app-debug.apk")
+    @TaskAction
+    fun install() {
+        val adbPath = adbExecutable.get()
+        val apk = apkFile.asFile.orNull
 
-        if (!apkFile.exists()) {
-            logger.warn("APK file not found at ${apkFile.absolutePath}, skipping installation.")
-            return@doLast
+        if (apk == null || !apk.exists()) {
+            logger.warn("APK file not found, skipping installation.")
+            return
         }
 
         val devicesOutput = ByteArrayOutputStream().use { outputStream ->
-            project.exec {
+            execOps.exec {
                 commandLine(adbPath, "devices")
                 standardOutput = outputStream
             }.assertNormalExitValue()
@@ -256,13 +263,13 @@ tasks.register("installDebugSoftly") {
 
         if (devices.isEmpty()) {
             logger.lifecycle("No devices connected for installation.")
-            return@doLast
+            return
         }
 
         devices.forEach { deviceId ->
             logger.lifecycle("Installing APK on device '$deviceId'...")
-            val result = project.exec {
-                commandLine(adbPath, "-s", deviceId, "install", "-r", "-t", apkFile.absolutePath)
+            val result = execOps.exec {
+                commandLine(adbPath, "-s", deviceId, "install", "-r", "-t", apk.absolutePath)
                 isIgnoreExitValue = true
             }
             if (result.exitValue != 0) {
@@ -272,6 +279,13 @@ tasks.register("installDebugSoftly") {
             }
         }
     }
+}
+
+tasks.register<InstallDebugSoftlyTask>("installDebugSoftly") {
+    group = "install"
+    description = "Installs the debug APK on all connected devices, treating installation failures as warnings."
+    adbExecutable.set(android.adbExecutable.absolutePath)
+    apkFile.set(layout.buildDirectory.file("outputs/apk/debug/app-debug.apk"))
 }
 
 // Ensure that when the debug APK is assembled, we automatically install it to the connected device.
