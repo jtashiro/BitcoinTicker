@@ -5,6 +5,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      track:
+        description: 'Play store track to publish to (internal, alpha, beta, production)'
+        required: false
+        default: 'production'
 
 jobs:
   build-release:
@@ -13,6 +18,7 @@ jobs:
       contents: write
     env:
       HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
+      HAS_PLAY_SERVICE_ACCOUNT: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,6 +49,12 @@ jobs:
           keyPassword=${{ secrets.KEY_PASSWORD }}
           EOF
 
+      - name: Write Play service account JSON
+        if: env.HAS_PLAY_SERVICE_ACCOUNT == 'true'
+        run: |
+          echo "Writing play-service-account.json"
+          echo "${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}" > play-service-account.json
+
       - name: Grant execute to gradlew
         run: chmod +x ./gradlew
 
@@ -56,6 +68,13 @@ jobs:
         with:
           name: mapping.txt
           path: app/build/outputs/mapping/release/mapping.txt
+
+      - name: Publish to Google Play (Gradle Play Publisher)
+        if: env.HAS_PLAY_SERVICE_ACCOUNT == 'true'
+        run: |
+          TRACK="${{ github.event.inputs.track || 'production' }}"
+          echo "Publishing to Play track: $TRACK"
+          ./gradlew :app:publishReleaseBundle -PplayServiceAccountCredentials=play-service-account.json -Ptrack="$TRACK" --no-daemon
 
       - name: Create Git tag
         id: tag
