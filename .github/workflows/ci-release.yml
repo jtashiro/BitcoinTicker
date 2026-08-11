@@ -51,9 +51,14 @@ jobs:
 
       - name: Write Play service account JSON
         if: env.HAS_PLAY_SERVICE_ACCOUNT == 'true'
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
           echo "Writing play-service-account.json"
-          echo "${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}" > play-service-account.json
+          printf '%s' "$PLAY_SERVICE_ACCOUNT_JSON" > play-service-account.json
+          python3 -c "import json; json.load(open('play-service-account.json'))" \
+            && echo "play-service-account.json is valid JSON" \
+            || (echo "::error::play-service-account.json is not valid JSON — check the PLAY_SERVICE_ACCOUNT_JSON secret" && exit 1)
 
       - name: Grant execute to gradlew
         run: chmod +x ./gradlew
