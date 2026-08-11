@@ -215,7 +215,7 @@ java {
 // Configure Gradle Play Publisher to use a service account JSON written by CI at runtime
 play {
     // CI will create `play-service-account.json` in the repo root during the workflow
-    serviceAccountCredentials.set(file("play-service-account.json"))
+    serviceAccountCredentials.set(rootProject.file("play-service-account.json"))
     // Publish app bundles by default (AAB)
     defaultToAppBundles.set(true)
     // Default track for automated publishing — change to `internal`/`beta` as needed
