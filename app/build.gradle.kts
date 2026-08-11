@@ -5,7 +5,6 @@ import javax.inject.Inject
 
 plugins {
     alias(libs.plugins.android.application)
-    id("com.github.triplet.play") version "3.10.0"
 }
 
 // Helper to run git commands
@@ -210,23 +209,6 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
-}
-
-// Configure Gradle Play Publisher to use a service account JSON written by CI at runtime
-play {
-    // CI will create `play-service-account.json` in the repo root during the workflow
-    serviceAccountCredentials.set(file("play-service-account.json"))
-    // Publish app bundles by default (AAB)
-    defaultToAppBundles.set(true)
-    // Default track for automated publishing — change to `internal`/`beta` as needed
-    track.set("production")
-
-    // By default the plugin will publish the `release` variant/bundle. If you need to
-    // publish a specific variant, you can set `variantToPublish` (example commented out):
-    // variantToPublish.set("release")
-
-    // Optional: configure release status (e.g. "draft", "inProgress", "completed")
-    // releaseStatus.set("draft")
 }
 
 abstract class InstallDebugSoftlyTask @Inject constructor(private val execOps: ExecOperations) : DefaultTask() {

@@ -5,19 +5,12 @@ on:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      track:
-        description: 'Play store track to publish to (internal, alpha, beta, production)'
-        required: false
-        default: 'production'
 
 jobs:
-  build-and-publish:
+  build-release:
     runs-on: ubuntu-latest
     env:
-      JAVA_HOME_17: /usr/lib/jvm/adoptopenjdk-17-hotspot || /usr/lib/jvm/temurin-17
       HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
-      HAS_PLAY_SERVICE_ACCOUNT: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,12 +41,6 @@ jobs:
           keyPassword=${{ secrets.KEY_PASSWORD }}
           EOF
 
-      - name: Write Play service account JSON
-        if: env.HAS_PLAY_SERVICE_ACCOUNT == 'true'
-        run: |
-          echo "Writing play-service-account.json"
-          echo "${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}" > play-service-account.json
-
       - name: Grant execute to gradlew
         run: chmod +x ./gradlew
 
@@ -68,14 +55,6 @@ jobs:
           name: mapping.txt
           path: app/build/outputs/mapping/release/mapping.txt
 
-      - name: Publish to Google Play (Gradle Play Publisher)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TRACK=${{ github.event.inputs.track || 'production' }}
-          echo "Publishing to Play track: $TRACK"
-          ./gradlew :app:publishReleaseBundle -PplayServiceAccountCredentials=play-service-account.json -Ptrack=$TRACK --no-daemon
-
       - name: Create Git tag
         id: tag
         run: |
@@ -88,19 +67,11 @@ jobs:
           git push origin --tags || true
           echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
 
-      - name: Create GitHub Release
+      - name: Create GitHub Release with AAB
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
           name: ${{ steps.tag.outputs.tag }}
+          files: app/build/outputs/bundle/release/app-release.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload AAB to release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.tag.outputs.tag }}
-          name: ${{ steps.tag.outputs.tag }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
