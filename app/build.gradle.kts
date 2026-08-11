@@ -152,7 +152,7 @@ android {
     defaultConfig {
         applicationId = "com.fiospace.bitcointicker"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         // keep a readable base versionCode for simple debug builds
         versionCode = baseVersion
         versionName = gitTagOrDefault()
