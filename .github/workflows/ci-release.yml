@@ -29,13 +29,15 @@ jobs:
           java-version: '17'
 
       - name: Decode keystore
-        if: secrets.KEYSTORE_BASE64 != ''
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
           echo "Decoding keystore..."
           echo "$KEYSTORE_BASE64" | base64 --decode > app/keystore.jks
 
       - name: Create keystore properties
-        if: secrets.KEYSTORE_BASE64 != ''
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         run: |
           cat > keystore.properties <<EOF
           storeFile=keystore.jks
@@ -45,7 +47,7 @@ jobs:
           EOF
 
       - name: Write Play service account JSON
-        if: secrets.PLAY_SERVICE_ACCOUNT_JSON != ''
+        if: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
         run: |
           echo "Writing play-service-account.json"
           echo "${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}" > play-service-account.json
@@ -58,7 +60,7 @@ jobs:
           ./gradlew :app:clean :app:bundleRelease --no-daemon --warning-mode all
 
       - name: Upload mapping file as artifact (optional)
-        if: filesExists('app/build/outputs/mapping/release/mapping.txt')
+        if: ${{ hashFiles('app/build/outputs/mapping/release/mapping.txt') != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: mapping.txt
@@ -99,8 +101,4 @@ jobs:
           name: ${{ steps.tag.outputs.tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-# Helper function used by workflow to check file existence
-# Note: inline file check used in a step 'if' may not work on all runners; using an artifact upload step guarded by the if above.
 
