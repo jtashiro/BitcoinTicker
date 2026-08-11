@@ -31,11 +31,16 @@ fun gitCommitCount(default: Int = 1): Int {
     return out.toIntOrNull() ?: default
 }
 
-// Get latest tag for versionName (fallback if none)
-fun gitTagOrDefault(): String {
-    val tag = runGitCommand("describe", "--tags", "--abbrev=0")
-    return if (tag.isNotEmpty()) tag.removePrefix("v") else "0.0.0"
+// Get "major.minor" from the latest tag (fallback if none), e.g. "v1.8.0" or "1.8.0" -> "1.8"
+fun gitMajorMinorOrDefault(): String {
+    val tag = runGitCommand("describe", "--tags", "--abbrev=0").removePrefix("v")
+    val parts = tag.split(".")
+    return if (parts.size >= 2) "${parts[0]}.${parts[1]}" else "0.0"
 }
+
+// versionName as major.minor.buildNumber, e.g. "1.8.41" — buildNumber is the total commit count,
+// so it strictly increases with every commit the same way versionCode does.
+fun gitVersionName(buildNumber: Int): String = "${gitMajorMinorOrDefault()}.$buildNumber"
 // Kotlin
 tasks.register("runPythonScript") {
     doLast {
@@ -155,7 +160,7 @@ android {
         targetSdk = 36
         // keep a readable base versionCode for simple debug builds
         versionCode = baseVersion
-        versionName = gitTagOrDefault()
+        versionName = gitVersionName(baseVersion)
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
